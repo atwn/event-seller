@@ -22,7 +22,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Model.Event> GetById(int id)
+    public ActionResult<Model.Event> GetById([FromRoute] int id)
     {
         var eventItem = _eventService.GetEventById(id);
         if (eventItem == null)
@@ -31,5 +31,43 @@ public class EventsController : ControllerBase
         }
 
         return Ok(eventItem);
+    }
+
+    [HttpPost]
+    public IActionResult CreateEvent([FromBody] Dtos.EventDto body)
+    {
+        var nextId = _eventService.CreateEvent(body.Title, body.StartAt, body.EndAt, body.Description);
+        var newEvent = _eventService.GetEventById(nextId);
+        return CreatedAtAction(nameof(GetById), new { id = nextId }, newEvent);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult UpdateEvent([FromRoute] int id, [FromBody] Dtos.EventDto body)
+    {
+        var eventItem = _eventService.GetEventById(id);
+        if (eventItem == null)
+        {
+            return NotFound();
+        }
+
+        eventItem.Title = body.Title;
+        eventItem.Description = body.Description;
+        eventItem.StartAt = body.StartAt;
+        eventItem.EndAt = body.EndAt;
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteEvent([FromRoute] int id)
+    {
+        var eventItem = _eventService.GetEventById(id);
+        if (eventItem == null)
+        {
+            return NotFound();
+        }
+
+        _eventService.Remove(eventItem);
+        return NoContent();
     }
 }
