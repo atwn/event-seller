@@ -4,7 +4,7 @@
 ```bash
 dotnet run --project .\src\Events.Api\Events.Api.csproj
 ```
-open http://localhost:5111/swagger/index.html in the browser  
+then open http://localhost:5111/swagger/index.html in the browser  
 
 ### Endpoints:
 - `GET /api/events` - возвращает полный список событий  
@@ -26,7 +26,7 @@ open http://localhost:5111/swagger/index.html in the browser
 ### Prerequisites:
 .NET 10 SDK
 
-### This project was created with the following steps:
+### Scaffolding:
 ```bash
 dotnet new webapi -n Events.Api -f net10.0 --use-controllers --no-openapi --no-https
 

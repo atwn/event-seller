@@ -36,7 +36,12 @@ public class EventsController : ControllerBase
     [HttpPost]
     public IActionResult CreateEvent([FromBody] Dtos.EventDto body)
     {
-        var nextId = _eventService.CreateEvent(body.Title, body.StartAt, body.EndAt, body.Description);
+        if (body.StartAt == null || body.EndAt == null)
+        {
+            throw new ApplicationException("StartAt and EndAt must be checked by validators.");
+        }
+
+        var nextId = _eventService.CreateEvent(body.Title, body.StartAt.Value, body.EndAt.Value, body.Description);
         var newEvent = _eventService.GetEventById(nextId);
         return CreatedAtAction(nameof(GetById), new { id = nextId }, newEvent);
     }
@@ -44,6 +49,11 @@ public class EventsController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult UpdateEvent([FromRoute] int id, [FromBody] Dtos.EventDto body)
     {
+        if (body.StartAt == null || body.EndAt == null)
+        {
+            throw new ApplicationException("StartAt and EndAt must be checked by validators.");
+        }
+
         var eventItem = _eventService.GetEventById(id);
         if (eventItem == null)
         {
@@ -52,8 +62,8 @@ public class EventsController : ControllerBase
 
         eventItem.Title = body.Title;
         eventItem.Description = body.Description;
-        eventItem.StartAt = body.StartAt;
-        eventItem.EndAt = body.EndAt;
+        eventItem.StartAt = body.StartAt.Value;
+        eventItem.EndAt = body.EndAt.Value;
 
         return NoContent();
     }
