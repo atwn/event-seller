@@ -44,16 +44,10 @@ public class EventsController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult UpdateEvent([FromRoute] int id, [FromBody] Dtos.EventDto body)
     {
-        var eventItem = _eventService.GetEventById(id);
-        if (eventItem == null)
+        if (!_eventService.TryUpdate(id, body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description))
         {
             return NotFound();
         }
-
-        eventItem.Title = body.Title;
-        eventItem.Description = body.Description;
-        eventItem.StartAt = body.StartAt!.Value;
-        eventItem.EndAt = body.EndAt!.Value;
 
         return NoContent();
     }

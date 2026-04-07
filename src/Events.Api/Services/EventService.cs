@@ -53,6 +53,21 @@
             return nextId;
         }
 
+        public bool TryUpdate(int id, string title, DateTime startAt, DateTime endAt, string? description = null)
+        {
+            var eventItem = _data.FirstOrDefault(e => e.Id == id);
+            if (eventItem == null)
+            {
+                return false;
+            }
+
+            eventItem.Title = title;
+            eventItem.StartAt = startAt;
+            eventItem.EndAt = endAt;
+            eventItem.Description = description;
+            return true;
+        }
+
         public int GetNextId()
         {
             return _data.Max(e => e.Id) + 1;
