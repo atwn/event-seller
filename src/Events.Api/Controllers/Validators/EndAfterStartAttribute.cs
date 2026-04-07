@@ -6,7 +6,7 @@ namespace Events.Api.Controllers.Validators
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            if (value is Dtos.EventDto eventDto
+            if (value is Dtos.EventCreateDto eventDto
                 && eventDto.EndAt.HasValue && eventDto.StartAt.HasValue // проверяем, что оба поля имеют значение,
                                                                         // потому что этот валидатор может быть применен раньше атрибута Required
                 && eventDto.EndAt <= eventDto.StartAt)

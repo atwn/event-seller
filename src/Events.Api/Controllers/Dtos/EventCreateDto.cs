@@ -3,7 +3,7 @@
 namespace Events.Api.Controllers.Dtos
 {
     [Validators.EndAfterStart]
-    public class EventDto
+    public class EventCreateDto
     {
         [Required(AllowEmptyStrings = false, ErrorMessage = "Поле 'Title' обязательно для заполнения.")]
         public required string Title { get; set; }
