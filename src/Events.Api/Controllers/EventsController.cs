@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Events.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
