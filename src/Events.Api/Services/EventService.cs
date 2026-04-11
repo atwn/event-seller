@@ -6,21 +6,6 @@
 
         public EventService()
         {
-            _data.Add(new Model.Event
-            {
-                Id = 1,
-                Title = "Metallica Concert",
-                Description = "Experience the legendary Metallica live in concert!",
-                StartAt = DateTime.UtcNow.AddDays(1).Date.AddHours(22), // tomorrow at 10pm UTC
-                EndAt = DateTime.UtcNow.AddDays(2).Date.AddHours(1), // the day after tomorrow at 1am UTC
-            });
-            _data.Add(new Model.Event
-            {
-                Id = 2,
-                Title = "Cirque Du Soleil Show",
-                StartAt = DateTime.UtcNow.AddDays(7).Date.AddHours(15), // in a week at 3pm UTC
-                EndAt = DateTime.UtcNow.AddDays(7).Date.AddHours(17).AddMinutes(30), // same day at 5:30pm UTC
-            });
         }
 
         public IEnumerable<Model.Event> GetAll()
@@ -72,6 +57,11 @@
         public int GetNextId()
         {
             return _data.Max(e => e.Id) + 1;
+        }
+
+        public void Add(Model.Event @event)
+        {
+            _data.Add(@event);
         }
     }
 }

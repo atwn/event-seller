@@ -8,8 +8,31 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// register controllers and services in the DI container:
-builder.Services.AddSingleton<IEventService, EventService>();
+// добавить сервисы в DI-контейнер:
+builder.Services.AddSingleton<IEventService>(provider =>
+{
+    var service = new EventService();
+
+    service.Add(new Events.Api.Model.Event
+    {
+        Id = 1,
+        Title = "Metallica Concert",
+        Description = "Experience the legendary Metallica live in concert!",
+        StartAt = DateTime.UtcNow.AddDays(1).Date.AddHours(22), // tomorrow at 10pm UTC
+        EndAt = DateTime.UtcNow.AddDays(2).Date.AddHours(1), // the day after tomorrow at 1am UTC
+    });
+    service.Add(new Events.Api.Model.Event
+    {
+        Id = 2,
+        Title = "Cirque Du Soleil Show",
+        StartAt = DateTime.UtcNow.AddDays(7).Date.AddHours(15), // in a week at 3pm UTC
+        EndAt = DateTime.UtcNow.AddDays(7).Date.AddHours(17).AddMinutes(30), // same day at 5:30pm UTC
+    });
+
+    return service;
+});
+
+// добавить контроллеры в DI-контейнер:
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
