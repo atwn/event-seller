@@ -4,6 +4,7 @@ using Events.Api.Controllers.Filters;
 using Events.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,13 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // использовать фильтр для перобразования маршрутов в нижний регистр:
     options.DocumentFilter<LowerCasePathFilter>();
+
+    // добавить документацию:
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
 });
 
 var app = builder.Build();

@@ -4,7 +4,7 @@ namespace Events.Api.Controllers.Validators
 {
     public class EndAfterStartAttribute : ValidationAttribute
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext context)
         {
             if (value is Dtos.EventCreateDto eventDto
                 && eventDto.EndAt.HasValue && eventDto.StartAt.HasValue // проверяем, что оба поля имеют значение,
