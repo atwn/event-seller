@@ -116,13 +116,6 @@ public class EventsController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteEvent([FromRoute, PositiveInteger] int id)
     {
-        var eventItem = _eventService.GetEventById(id);
-        if (eventItem == null)
-        {
-            return NotFound();
-        }
-
-        _eventService.Remove(eventItem);
-        return NoContent();
+        return _eventService.TryRemove(id) ? NoContent() : NotFound();
     }
 }

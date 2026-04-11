@@ -33,9 +33,10 @@
             return _data.FirstOrDefault(e => e.Id == id);
         }
 
-        public void Remove(Model.Event eventItem)
+        public bool TryRemove(int id)
         {
-            _data.Remove(eventItem);
+            return GetEventById(id) is Model.Event @event
+                && _data.Remove(@event);
         }
 
         public int CreateEvent(string title, DateTime startAt, DateTime endAt, string? description = null)
