@@ -1,5 +1,6 @@
 using Events.Api.Contracts;
 using Events.Api.Controllers.Dtos;
+using Events.Api.Controllers.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -19,14 +20,9 @@ public class EventsController : ControllerBase
     public ActionResult<IEnumerable<EventResponseDto>> GetAll()
     {
         var events = _eventService.GetAll()
-            .Select(e => new EventResponseDto
-            {
-                Id = e.Id,
-                Title = e.Title,
-                Description = e.Description,
-                StartAt = e.StartAt,
-                EndAt = e.EndAt
-            }).ToList();
+            .Select(@event => Map.ToResponse(@event))
+            .ToList();
+
         return Ok(events);
     }
 
@@ -39,28 +35,25 @@ public class EventsController : ControllerBase
             return NotFound();
         }
 
-        var eventResponse = new EventResponseDto
-        {
-            Id = @event.Id,
-            Title = @event.Title,
-            Description = @event.Description,
-            StartAt = @event.StartAt,
-            EndAt = @event.EndAt
-        };
-
-        return Ok(eventResponse);
+        return Ok(Map.ToResponse(@event));
     }
 
     [HttpPost]
-    public IActionResult CreateEvent([FromBody] Dtos.EventCreateDto body)
+    public IActionResult CreateEvent([FromBody] EventCreateDto body)
     {
         var nextId = _eventService.CreateEvent(body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description);
-        var newEvent = _eventService.GetEventById(nextId);
-        return CreatedAtAction(nameof(GetById), new { id = nextId }, newEvent);
+        var @event = _eventService.GetEventById(nextId);
+        return @event != null
+            ? CreatedAtAction(
+                actionName: nameof(GetById),
+                routeValues: new { id = nextId },
+                value: Map.ToResponse(@event))
+            : StatusCode(StatusCodes.Status500InternalServerError); // лучше, наверное, выбросить исключение, и поймать его в middleware,
+                                                                    // так как ненайденное событие, в данном случае, - это нештатная ситуация
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateEvent([FromRoute] int id, [FromBody] Dtos.EventCreateDto body)
+    public IActionResult UpdateEvent([FromRoute] int id, [FromBody] EventCreateDto body)
     {
         if (!_eventService.TryUpdate(id, body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description))
         {

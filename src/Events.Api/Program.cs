@@ -23,7 +23,7 @@ builder.Services.AddControllers()
 
             var customResponse = new BadRequestDto
             {
-                Message = "Проверьте правильность введенных данных.",
+                Message = "Проверьте правильность введённых данных.",
                 Status = (int)HttpStatusCode.BadRequest,
                 Errors = errors
             };
