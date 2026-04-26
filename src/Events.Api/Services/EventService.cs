@@ -8,21 +8,35 @@
         {
         }
 
-        public IEnumerable<Model.Event> GetFilteredEvents(Contracts.FilterOptions? filter)
+        public Contracts.PagedResult<Model.Event> GetFilteredEvents(Contracts.PaginationOptions pagination, Contracts.FilterOptions? filter = null)
         {
-            IEnumerable<Model.Event> result = _data;
+            IEnumerable<Model.Event> items = _data;
             if (filter?.Title is string title) {
-                result = result.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+                items = items.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
             }
             if (filter?.From is DateTime from) {
-                result = result.Where(e => e.StartAt >= from);
+                items = items.Where(e => e.StartAt >= from);
             }
             if (filter?.To is DateTime to) {
-                result = result.Where(e => e.EndAt <= to);
+                items = items.Where(e => e.EndAt <= to);
             }
 
-            // материализовать результат, чтобы избежать повторного выполнения фильтрации:
-            return [.. result];
+            // посчитать общее количество элементов и страниц до материализации результата:
+            var totalCount = items.Count();
+            var totalPages = (totalCount + pagination.PageSize - 1) / pagination.PageSize; // округление вверх без использования Math.Ceiling
+
+            // запрошенный номер страницы не должен превышать totalPages:
+            if (pagination.Page > totalPages) {
+                throw new ArgumentException($"Номер запрошенной страницы {pagination.Page} превышает общее количество страниц {totalPages}.");
+            }
+
+            // применить пагинацию и материализовать результат:
+            items = items
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList(); // материализовать результат, чтобы избежать повторного выполнения фильтрации
+
+            return new Contracts.PagedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
         }
 
         public Model.Event? GetEventById(int id)

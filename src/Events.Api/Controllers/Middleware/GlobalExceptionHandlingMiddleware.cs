@@ -48,6 +48,7 @@ namespace Events.Api.Controllers.Middleware
         private static int MapToStatusCode(Exception ex) => ex switch
         {
             ValidationException => StatusCodes.Status400BadRequest,
+            ArgumentException => StatusCodes.Status400BadRequest,
             KeyNotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
