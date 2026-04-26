@@ -8,9 +8,21 @@
         {
         }
 
-        public IEnumerable<Model.Event> GetAll()
+        public IEnumerable<Model.Event> GetFilteredEvents(Contracts.FilterOptions? filter)
         {
-            return _data;
+            IEnumerable<Model.Event> result = _data;
+            if (filter?.Title is string title) {
+                result = result.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+            }
+            if (filter?.From is DateTime from) {
+                result = result.Where(e => e.StartAt >= from);
+            }
+            if (filter?.To is DateTime to) {
+                result = result.Where(e => e.EndAt <= to);
+            }
+
+            // материализовать результат, чтобы избежать повторного выполнения фильтрации:
+            return [.. result];
         }
 
         public Model.Event? GetEventById(int id)

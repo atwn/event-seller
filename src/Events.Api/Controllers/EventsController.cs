@@ -20,13 +20,17 @@ public class EventsController : ControllerBase
     /// <summary>
     /// Получить полный список событий
     /// </summary>
+    /// <param name="title">(Опциональный) Фильтр событий по названию</param>
+    /// <param name="from">(Опциональный) Фильтр событий по дате начала</param>
+    /// <param name="to">(Опциональный) Фильтр событий по дате окончания</param>
     /// <response code="200">Возвращает полный список зарегистрированных событий</response>
     [Produces("application/json")]
     [ProducesResponseType(typeof(EventResponseDto), StatusCodes.Status200OK)]
     [HttpGet]
-    public ActionResult<IEnumerable<EventResponseDto>> GetAll()
+    public ActionResult<IEnumerable<EventResponseDto>> GetAll([FromQuery] string? title, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
     {
-        var events = _eventService.GetAll()
+        var filter = new FilterOptions(title, from, to);
+        var events = _eventService.GetFilteredEvents(filter)
             .Select(@event => Map.ToResponse(@event))
             .ToList();
 

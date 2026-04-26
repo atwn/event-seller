@@ -2,7 +2,7 @@
 {
     public interface IEventService
     {
-        IEnumerable<Model.Event> GetAll();
+        IEnumerable<Model.Event> GetFilteredEvents(FilterOptions? filter);
 
         Model.Event? GetEventById(int id);
 
