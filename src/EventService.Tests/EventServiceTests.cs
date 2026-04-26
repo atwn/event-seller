@@ -92,6 +92,25 @@ public class EventServiceTests
 
     [Theory]
     [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Large")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetFilteredEventsWithPaginationData), MemberType = typeof(EventServiceTestData))]
+    public void GetFilteredEventsWithPagination_ReturnsCorrectPage(List<Events.Api.Model.Event> storedEvents, FilterOptions filter, PaginationOptions pagination, PaginatedResult<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(filter, pagination);
+
+        // Assert
+        Assert.Equivalent(expected, result);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
     [Trait("Complexity", "Medium")]
     [Trait("Direction", "Positive")]
     [MemberData(nameof(EventServiceTestData.GetEventByIdData), MemberType = typeof(EventServiceTestData))]

@@ -11,7 +11,7 @@
         public Contracts.PaginatedResult<Model.Event> GetFilteredEvents(Contracts.FilterOptions? filter = null, Contracts.PaginationOptions? pagination = null)
         {
             // применить фильтры к данным, используя отложенное выполнение LINQ:
-            IEnumerable<Model.Event> items = _data;
+            IEnumerable<Model.Event> items = _data.OrderBy(e => e.Id);
             if (filter?.Title is string title) {
                 items = items.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
             }

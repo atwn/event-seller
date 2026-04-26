@@ -88,4 +88,11 @@ public static class EventServiceTestData
         { _events.Values.ToList(), new PaginationOptions(Page: 3, PageSize: 2), new PaginatedResult<Event>(new List<Event> { _events["Sightseeing Tour"], _events["Tech Conference"] }, 3, 3, 6) },
         { _events.Values.ToList(), new PaginationOptions(Page: 2, PageSize: 5), new PaginatedResult<Event>(new List<Event> { _events["Tech Conference"] }, 2, 2, 6) },
     };
+
+    public static TheoryData<List<Event>, FilterOptions, PaginationOptions, PaginatedResult<Event>> GetFilteredEventsWithPaginationData => new()
+    {
+        { new List<Event>(), new FilterOptions(Title: "Concert"), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(Items: new List<Event>(), 1, 1, 0) },
+        { _events.Values.ToList(), new FilterOptions(From: DateTime.UtcNow.AddDays(5), To: DateTime.UtcNow.AddDays(8)), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(Items: new List<Event> { _events["Metallica"], _events["Guided Tour"] }, 1, 1, 2) },
+        { _events.Values.ToList(), new FilterOptions(Title: "t", From: DateTime.UtcNow.AddDays(2), To: DateTime.UtcNow.AddDays(45)), new PaginationOptions(Page: 2, PageSize: 3), new PaginatedResult<Event>(Items: new List<Event> { _events["Guided Tour"], _events["Tech Conference"] }, 2, 2, 5) },
+    };
 }
