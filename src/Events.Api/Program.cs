@@ -72,6 +72,8 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// сначала добавить трассировку запросов, затем обработку исключений:
+app.UseMiddleware<TracingMiddleware>();
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseSwagger();

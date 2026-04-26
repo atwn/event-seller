@@ -22,14 +22,13 @@ namespace Events.Api.Controllers.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Произошла необработанная ошибка: {Message}. Method={Method}, Path={Path}, RequestId={RequestId}.",
-                    ex.Message,
+                _logger.LogError(ex, "Произошла необработанная ошибка в запросе {Method} {Path} (TraceId: '{TraceId}'):\n\t{Message}",
                     context.Request.Method,
                     context.Request.Path,
-                    context.Request.Headers["x-request-id"]);
+                    context.Items["TraceId"], // TracingMiddleware должен был добавить TraceId в конвейер
+                    ex.Message);
                 if (context.Response.HasStarted)
                 {
-                    // Если ответ уже начался, мы не можем изменить его, поэтому просто завершаем обработку
                     return;
                 }
 
