@@ -45,17 +45,32 @@
 
         public Model.Event? GetEventById(int id)
         {
+            if (id < 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
             return _data.FirstOrDefault(e => e.Id == id);
         }
 
         public bool TryRemove(int id)
         {
+            if (id < 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
             return GetEventById(id) is Model.Event @event
                 && _data.Remove(@event);
         }
 
         public int CreateEvent(string title, DateTime startAt, DateTime endAt, string? description = null)
         {
+            if (startAt >= endAt)
+            {
+                throw new ArgumentException("StartAt must be earlier than EndAt");
+            }
+
             var nextId = GetNextId();
             var newEvent = new Model.Event
             {
@@ -71,6 +86,16 @@
 
         public bool TryUpdate(int id, string title, DateTime startAt, DateTime endAt, string? description = null)
         {
+            if (id < 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
+            if (startAt >= endAt)
+            {
+                throw new ArgumentException("StartAt must be earlier than EndAt");
+            }
+
             var eventItem = _data.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
             {

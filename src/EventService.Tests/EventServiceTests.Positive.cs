@@ -2,7 +2,7 @@
 
 namespace EventService.Tests;
 
-public class EventServiceTests
+public partial class EventServiceTests
 {
     private readonly Events.Api.Services.EventService _service;
 
