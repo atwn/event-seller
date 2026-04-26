@@ -1,5 +1,4 @@
-﻿
-namespace EventService.Tests;
+﻿namespace EventService.Tests;
 
 public class EventServiceTests
 {
@@ -11,6 +10,8 @@ public class EventServiceTests
     }
 
     [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
     public void CreateEvent_ReturnsValidEventId()
     {
         // Arrange
@@ -27,5 +28,23 @@ public class EventServiceTests
 
         // Assert
         Assert.True(id > 0);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [MemberData(nameof(EventServiceTestData.UpToTwoEvents), MemberType = typeof(EventServiceTestData))]
+    public void GetAllEvents_ReturnsAllEvents(List<Events.Api.Model.Event> storedEvents)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents();
+
+        // Assert
+        Assert.Equal(storedEvents, result.Items);
     }
 }

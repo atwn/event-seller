@@ -2,7 +2,7 @@
 {
     public interface IEventService
     {
-        PagedResult<Model.Event> GetFilteredEvents(PaginationOptions pagination, FilterOptions? filter = null);
+        PaginatedResult<Model.Event> GetFilteredEvents(FilterOptions? filter = null, PaginationOptions? pagination = null);
 
         Model.Event? GetEventById(int id);
 
@@ -14,6 +14,4 @@
 
         int GetNextId();
     }
-
-    public record PagedResult<T>(IEnumerable<T> Items, int CurrentPage, int TotalPages, int TotalItems);
 }

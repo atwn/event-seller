@@ -27,10 +27,10 @@ public class EventsController : ControllerBase
     /// <param name="to">(Опциональный) Фильтр событий по дате окончания</param>
     /// <response code="200">Возвращает полный список зарегистрированных событий</response>
     [Produces("application/json")]
-    [ProducesResponseType(typeof(PaginatedResult<EventResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dtos.PaginatedResult<EventResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
     [HttpGet]
-    public ActionResult<PaginatedResult<EventResponseDto>> GetAll(
+    public ActionResult<Dtos.PaginatedResult<EventResponseDto>> GetAll(
         [FromQuery, PositiveInteger] int page = 1,
         [FromQuery, PositiveInteger] int pageSize = 10,
         [FromQuery] string? title = null,
@@ -39,8 +39,8 @@ public class EventsController : ControllerBase
     {
         var filter = new FilterOptions(title, from, to);
         var pagination = new PaginationOptions(page, pageSize);
-        var currentPage = _eventService.GetFilteredEvents(pagination, filter);
-        var responseBody = new PaginatedResult<EventResponseDto>
+        var currentPage = _eventService.GetFilteredEvents(filter, pagination);
+        var responseBody = new Dtos.PaginatedResult<EventResponseDto>
         {
             Items = [.. currentPage.Items.Select(Map.ToResponse)],
             CurrentPage = currentPage.CurrentPage,

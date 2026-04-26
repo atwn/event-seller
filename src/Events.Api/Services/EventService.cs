@@ -8,8 +8,9 @@
         {
         }
 
-        public Contracts.PagedResult<Model.Event> GetFilteredEvents(Contracts.PaginationOptions pagination, Contracts.FilterOptions? filter = null)
+        public Contracts.PaginatedResult<Model.Event> GetFilteredEvents(Contracts.FilterOptions? filter = null, Contracts.PaginationOptions? pagination = null)
         {
+            // применить фильтры к данным, используя отложенное выполнение LINQ:
             IEnumerable<Model.Event> items = _data;
             if (filter?.Title is string title) {
                 items = items.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
@@ -21,9 +22,12 @@
                 items = items.Where(e => e.EndAt <= to);
             }
 
+            // если не переданы параметры пагинации, использовать значения по умолчанию:
+            pagination ??= new Contracts.PaginationOptions();
+
             // посчитать общее количество элементов и страниц до материализации результата:
             var totalCount = items.Count();
-            var totalPages = (totalCount + pagination.PageSize - 1) / pagination.PageSize; // округление вверх без использования Math.Ceiling
+            var totalPages = totalCount == 0 ? 1 : (totalCount + pagination.PageSize - 1) / pagination.PageSize; // округление вверх без использования Math.Ceiling
 
             // запрошенный номер страницы не должен превышать totalPages:
             if (pagination.Page > totalPages) {
@@ -36,7 +40,7 @@
                 .Take(pagination.PageSize)
                 .ToList(); // материализовать результат, чтобы избежать повторного выполнения фильтрации
 
-            return new Contracts.PagedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
+            return new Contracts.PaginatedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
         }
 
         public Model.Event? GetEventById(int id)
