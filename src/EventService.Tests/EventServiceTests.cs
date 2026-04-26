@@ -47,4 +47,22 @@ public class EventServiceTests
         // Assert
         Assert.Equal(storedEvents, result.Items);
     }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [MemberData(nameof(EventServiceTestData.GetEventByIdData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventById_EventExists_ReturnsCorrectEvent(List<Events.Api.Model.Event> storedEvents, int eventId, Events.Api.Model.Event expectedEvent)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetEventById(eventId);
+
+        // Assert
+        Assert.Equal(expectedEvent, result);
+    }
 }

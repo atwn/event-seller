@@ -29,4 +29,10 @@ public static class EventServiceTestData
         { new List<Event>() },
         { new List<Event> { _events["Metallica"], _events["Coldplay"] } }
     };
+
+    public static TheoryData<List<Event>, int, Event> GetEventByIdData => new()
+    {
+        { new List<Event> { _events["Metallica"], _events["Coldplay"] }, 1, _events["Metallica"] },
+        { new List<Event> { _events["Metallica"], _events["Coldplay"] }, 2, _events["Coldplay"] }
+    };
 }
