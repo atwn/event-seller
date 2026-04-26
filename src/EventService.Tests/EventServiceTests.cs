@@ -12,6 +12,7 @@ public class EventServiceTests
     [Fact]
     [Trait("Target", nameof(Events.Api.Services.EventService))]
     [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
     public void CreateEvent_ReturnsValidEventId()
     {
         // Arrange
@@ -33,6 +34,7 @@ public class EventServiceTests
     [Theory]
     [Trait("Target", nameof(Events.Api.Services.EventService))]
     [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
     [MemberData(nameof(EventServiceTestData.UpToTwoEvents), MemberType = typeof(EventServiceTestData))]
     public void GetAllEvents_ReturnsAllEvents(List<Events.Api.Model.Event> storedEvents)
     {
@@ -51,6 +53,7 @@ public class EventServiceTests
     [Theory]
     [Trait("Target", nameof(Events.Api.Services.EventService))]
     [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
     [MemberData(nameof(EventServiceTestData.GetEventByIdData), MemberType = typeof(EventServiceTestData))]
     public void GetEventById_EventExists_ReturnsCorrectEvent(List<Events.Api.Model.Event> storedEvents, int eventId, Events.Api.Model.Event expectedEvent)
     {
@@ -64,5 +67,53 @@ public class EventServiceTests
 
         // Assert
         Assert.Equal(expectedEvent, result);
+    }
+
+    [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
+    public void UpdateEvent_EventExists_ReturnsTrue()
+    {
+        // Arrange
+        var @event = new Events.Api.Model.Event
+        {
+            Id = 1,
+            Title = "Test Event",
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1),
+            Description = "This is a test event."
+        };
+        _service.Add(@event);
+
+        // Act
+        var result = _service.TryUpdate(@event.Id, "Updated Title", @event.StartAt, @event.EndAt, @event.Description);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
+    public void DeleteEvent_EventExists_ReturnsTrue()
+    {
+        // Arrange
+        var @event = new Events.Api.Model.Event
+        {
+            Id = 1,
+            Title = "Test Event",
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1),
+            Description = "This is a test event."
+        };
+        _service.Add(@event);
+
+        // Act
+        var result = _service.TryRemove(@event.Id);
+
+        // Assert
+        Assert.True(result);
     }
 }
