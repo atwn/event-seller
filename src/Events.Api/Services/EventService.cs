@@ -82,7 +82,7 @@
 
         public int GetNextId()
         {
-            return _data.Max(e => e.Id) + 1;
+            return _data.Select(e => e.Id).DefaultIfEmpty(0).Max() + 1;
         }
 
         public void Add(Model.Event @event)
