@@ -1,4 +1,6 @@
-﻿namespace EventService.Tests;
+﻿using Events.Api.Contracts;
+
+namespace EventService.Tests;
 
 public class EventServiceTests
 {
@@ -48,6 +50,25 @@ public class EventServiceTests
 
         // Assert
         Assert.Equal(storedEvents, result.Items);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetFilteredEventsData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventsFilteredByTitle_ReturnsFilteredEvents(List<Events.Api.Model.Event> storedEvents, FilterOptions filter, List<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(filter);
+
+        // Assert
+        Assert.Equal(expected, result.Items);
     }
 
     [Theory]
