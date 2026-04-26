@@ -79,4 +79,13 @@ public static class EventServiceTestData
         { _events.Values.ToList(), new FilterOptions(From: DateTime.UtcNow.AddDays(5), To: DateTime.UtcNow.AddDays(8)), new List<Event> { _events["Metallica"], _events["Guided Tour"] } },
         { _events.Values.ToList(), new FilterOptions(Title: "con", From: DateTime.UtcNow.AddDays(5), To: DateTime.UtcNow.AddDays(8)), new List<Event> { _events["Metallica"] } },
     };
+
+    public static TheoryData<List<Event>, PaginationOptions, PaginatedResult<Event>> GetEventsWithPaginationData => new()
+    {
+        { new List<Event>(), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(new List<Event>(), 1, 1, 0) },
+        { _events.Values.ToList(), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(new List<Event> { _events["Metallica"], _events["Coldplay"] }, 1, 3, 6) },
+        { _events.Values.ToList(), new PaginationOptions(Page: 2, PageSize: 2), new PaginatedResult<Event>(new List<Event> { _events["Football Match"], _events["Guided Tour"] }, 2, 3, 6) },
+        { _events.Values.ToList(), new PaginationOptions(Page: 3, PageSize: 2), new PaginatedResult<Event>(new List<Event> { _events["Sightseeing Tour"], _events["Tech Conference"] }, 3, 3, 6) },
+        { _events.Values.ToList(), new PaginationOptions(Page: 2, PageSize: 5), new PaginatedResult<Event>(new List<Event> { _events["Tech Conference"] }, 2, 2, 6) },
+    };
 }

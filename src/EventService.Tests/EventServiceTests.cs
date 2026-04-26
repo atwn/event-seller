@@ -75,6 +75,25 @@ public class EventServiceTests
     [Trait("Target", nameof(Events.Api.Services.EventService))]
     [Trait("Complexity", "Medium")]
     [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetEventsWithPaginationData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventsWithPagination_ReturnsCorrectPage(List<Events.Api.Model.Event> storedEvents, PaginationOptions pagination, PaginatedResult<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(pagination: pagination);
+
+        // Assert
+        Assert.Equivalent(expected, result);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
     [MemberData(nameof(EventServiceTestData.GetEventByIdData), MemberType = typeof(EventServiceTestData))]
     public void GetEventById_EventExists_ReturnsCorrectEvent(List<Events.Api.Model.Event> storedEvents, int eventId, Events.Api.Model.Event expectedEvent)
     {
