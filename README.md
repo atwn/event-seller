@@ -26,6 +26,13 @@ then open http://localhost:5111/swagger/index.html in the browser
 ### Prerequisites:
 .NET 10 SDK
 
+### Checklist:
+- [ ] add logging to exception handling middleware
+- [ ] extend exception handing middleware with 400 and 404 errors
+- [ ] (maybe) throw exceptions from Validators instead of returning BadRequest
+- [ ] (maybe) unwrap inner exceptions in global exception handler
+- [ ] move seeding of test data from Program.cs to a helper class
+
 ### Scaffolding:
 ```bash
 dotnet new webapi -n Events.Api -f net10.0 --use-controllers --no-openapi --no-https

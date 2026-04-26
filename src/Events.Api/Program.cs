@@ -1,6 +1,7 @@
 using Events.Api.Contracts;
 using Events.Api.Controllers.Dtos;
 using Events.Api.Controllers.Filters;
+using Events.Api.Controllers.Middleware;
 using Events.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -70,6 +71,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();
