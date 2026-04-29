@@ -5,9 +5,9 @@ namespace EventService.Tests;
 
 public static class EventServiceTestData
 {
-    private static readonly Dictionary<string, Events.Api.Model.Event> _events = new Dictionary<string, Event>
+    private static readonly Dictionary<string, Event> _events = new Dictionary<string, Event>
     {
-        ["Metallica"] = new Events.Api.Model.Event
+        ["Metallica"] = new Event
         {
             Id = 1,
             Title = "Metallica Concert",
@@ -15,7 +15,7 @@ public static class EventServiceTestData
             EndAt = DateTime.UtcNow.AddDays(7).AddHours(3),
             Description = "Metallica live in concert!"
         },
-        ["Coldplay"] = new Events.Api.Model.Event
+        ["Coldplay"] = new Event
         {
             Id = 2,
             Title = "Coldplay Concert",
@@ -23,7 +23,7 @@ public static class EventServiceTestData
             EndAt = DateTime.UtcNow.AddDays(14).AddHours(3),
             Description = "Coldplay live in concert!"
         },
-        ["Football Match"] = new Events.Api.Model.Event
+        ["Football Match"] = new Event
         {
             Id = 3,
             Title = "Football Match",
@@ -31,7 +31,7 @@ public static class EventServiceTestData
             EndAt = DateTime.UtcNow.AddDays(3).AddHours(2),
             Description = "Exciting football match between top teams!"
         },
-        ["Guided Tour"] = new Events.Api.Model.Event
+        ["Guided Tour"] = new Event
         {
             Id = 4,
             Title = "Guided Tour",
@@ -39,7 +39,7 @@ public static class EventServiceTestData
             EndAt = DateTime.UtcNow.AddDays(7).AddHours(1),
             Description = "Explore the city's landmarks with us!"
         },
-        ["Sightseeing Tour"] = new Events.Api.Model.Event
+        ["Sightseeing Tour"] = new Event
         {
             Id = 5,
             Title = "Sightseeing Tour",
@@ -47,7 +47,7 @@ public static class EventServiceTestData
             EndAt = DateTime.UtcNow.AddDays(1).AddHours(4),
             Description = "Explore the city's landmarks with us!"
         },
-        ["Tech Conference"] = new Events.Api.Model.Event
+        ["Tech Conference"] = new Event
         {
             Id = 6,
             Title = "Tech Conference",
@@ -91,7 +91,7 @@ public static class EventServiceTestData
 
     public static TheoryData<List<Event>, FilterOptions, PaginationOptions, PaginatedResult<Event>> GetFilteredEventsWithPaginationData => new()
     {
-        { new List<Event>(), new FilterOptions(Title: "Concert"), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(Items: new List<Event>(), 1, 1, 0) },
+        { new List<Event>(), new FilterOptions(Title: "Concert"), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(Items: [], CurrentPage: 1, TotalPages: 1, TotalItems: 0) },
         { _events.Values.ToList(), new FilterOptions(From: DateTime.UtcNow.AddDays(5), To: DateTime.UtcNow.AddDays(8)), new PaginationOptions(Page: 1, PageSize: 2), new PaginatedResult<Event>(Items: new List<Event> { _events["Metallica"], _events["Guided Tour"] }, 1, 1, 2) },
         { _events.Values.ToList(), new FilterOptions(Title: "t", From: DateTime.UtcNow.AddDays(2), To: DateTime.UtcNow.AddDays(45)), new PaginationOptions(Page: 2, PageSize: 3), new PaginatedResult<Event>(Items: new List<Event> { _events["Guided Tour"], _events["Tech Conference"] }, 2, 2, 5) },
     };
