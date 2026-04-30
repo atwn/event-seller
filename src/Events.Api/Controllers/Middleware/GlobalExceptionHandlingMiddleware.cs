@@ -52,10 +52,13 @@ namespace Events.Api.Controllers.Middleware
             }
             catch (Exception ex)
             {
+                // TracingMiddleware должен был добавить TraceId в конвейер, достать его оттуда для логов:
+                var requestId = context.Items.TryGetValue("TraceId", out var traceId) ? Convert.ToString(traceId) ?? "<missing>" : "<missing>";
+
                 _logger.LogError(ex, "Произошла необработанная ошибка в запросе {Method} {Path} (TraceId: '{TraceId}'):\n\t{Message}",
                     context.Request.Method,
                     context.Request.Path,
-                    context.Items["TraceId"], // TracingMiddleware должен был добавить TraceId в конвейер
+                    requestId,
                     ex.Message);
                 if (context.Response.HasStarted)
                 {
@@ -69,7 +72,7 @@ namespace Events.Api.Controllers.Middleware
                 {
                     Title = MapToTitle(ex),
                     Status = statusCode,
-                    Detail = $"Номер запроса: '{context.Items["TraceId"]}'", // вместо того, чтобы показывать детали системных ошибок
+                    Detail = $"Номер запроса: '{requestId}'", // вместо того, чтобы показывать детали системных ошибок
                     Type = "https://tools.ietf.org/html/rfc7807",
                 };
                 await context.Response.WriteAsJsonAsync(errorResponse);
