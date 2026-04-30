@@ -31,10 +31,6 @@ dotnet test .\src\EventService.Tests\EventService.Tests.csproj
   - `204` - событие было удалено успешно  
   - `404` - событие под номером `{id}` не найдено  
 
-### Exceptions:
-- `BadRequestDto` - ошибка валидации (формируется валидатором контроллера)  
-- `ProblemDetails` - остальные ошибки (формируется в глобальном обработчике ошибок)  
-
 ### Структура проекта:
 ```
 Events.sln
@@ -54,7 +50,7 @@ Events.sln
 .NET 10 SDK
 
 ### TODOs:
-- [ ] привести ошибки (`BadRequestDto`, `NotFound` и т.д.) к формату `ProblemDetails`
+- [x] привести ошибки (`BadRequestDto`, `NotFound` и т.д.) к формату `ProblemDetails`
 - [ ] split the project into API → Application → Domain ← Infrastructure (clean / onion architecture)
 - [ ] move seeding of test data from Program.cs to a helper class
 

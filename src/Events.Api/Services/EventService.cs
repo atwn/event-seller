@@ -33,7 +33,10 @@ namespace Events.Api.Services
 
             // запрошенный номер страницы не должен превышать totalPages:
             if (pagination.Page > totalPages) {
-                throw new ArgumentException($"Номер запрошенной страницы {pagination.Page} превышает общее количество страниц {totalPages}.");
+                throw new Contracts.Exceptions.PaginationException($"Номер запрошенной страницы {pagination.Page} превышает общее количество страниц {totalPages}.")
+                {
+                    Options = pagination
+                };
             }
 
             // применить пагинацию и материализовать результат:
@@ -47,7 +50,7 @@ namespace Events.Api.Services
 
         public Model.Event? GetEventById(int id)
         {
-            if (id < 0)
+            if (id <= 0)
             {
                 throw new ArgumentException("ID must be a positive integer", nameof(id));
             }
@@ -57,7 +60,7 @@ namespace Events.Api.Services
 
         public bool TryRemove(int id)
         {
-            if (id < 0)
+            if (id <= 0)
             {
                 throw new ArgumentException("ID must be a positive integer", nameof(id));
             }
@@ -88,7 +91,7 @@ namespace Events.Api.Services
 
         public bool TryUpdate(int id, string title, DateTime startAt, DateTime endAt, string? description = null)
         {
-            if (id < 0)
+            if (id <= 0)
             {
                 throw new ArgumentException("ID must be a positive integer", nameof(id));
             }

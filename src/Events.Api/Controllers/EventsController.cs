@@ -1,5 +1,6 @@
 using Events.Api.Contracts;
 using Events.Api.Contracts.Dtos;
+using Events.Api.Contracts.Exceptions;
 using Events.Api.Controllers.Dtos;
 using Events.Api.Controllers.Mappers;
 using Events.Api.Controllers.Validators;
@@ -21,15 +22,16 @@ public class EventsController : ControllerBase
     /// <summary>
     /// Получить полный список событий
     /// </summary>
-    /// <param name="page">(Опциональный) Номер страницы для пагинации</param>
-    /// <param name="pageSize">(Опциональный) Количество элементов на странице</param>
     /// <param name="title">(Опциональный) Фильтр событий по названию</param>
     /// <param name="from">(Опциональный) Фильтр событий по дате начала</param>
     /// <param name="to">(Опциональный) Фильтр событий по дате окончания</param>
+    /// <param name="page">(Опциональный) Номер страницы для пагинации</param>
+    /// <param name="pageSize">(Опциональный) Количество элементов на странице</param>
     /// <response code="200">Возвращает полный список зарегистрированных событий</response>
+    /// <response code="400">Ошибка валидации входных данных</response>
     [Produces("application/json")]
     [ProducesResponseType(typeof(Dtos.PaginatedResult<EventResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [HttpGet]
     public ActionResult<Dtos.PaginatedResult<EventResponseDto>> GetAll(
         [FromQuery, PositiveInteger] int page = 1,
@@ -40,16 +42,30 @@ public class EventsController : ControllerBase
     {
         var filter = new FilterOptions(title, from, to);
         var pagination = new PaginationOptions(page, pageSize);
-        var currentPage = _eventService.GetFilteredEvents(filter, pagination);
-        var responseBody = new Dtos.PaginatedResult<EventResponseDto>
+        try
         {
-            Items = [.. currentPage.Items.Select(Map.ToResponse)],
-            CurrentPage = currentPage.CurrentPage,
-            TotalPages = currentPage.TotalPages,
-            TotalItems = currentPage.TotalItems
-        };
+            var currentPage = _eventService.GetFilteredEvents(filter, pagination);
+            var responseBody = new Dtos.PaginatedResult<EventResponseDto>
+            {
+                Items = [.. currentPage.Items.Select(Map.ToResponse)],
+                CurrentPage = currentPage.CurrentPage,
+                TotalPages = currentPage.TotalPages,
+                TotalItems = currentPage.TotalItems
+            };
 
-        return Ok(responseBody);
+            return Ok(responseBody);
+        }
+        catch (PaginationException ex)
+        {
+            // преобразовать доменное исключение в стандартное исключение API-слоя и указать на конкретный параметр, вызвавший ошибку:
+            throw new Exceptions.InputValidationException(ex.Message, ex)
+            {
+                Errors = new Dictionary<string, string[]>
+                {
+                    [nameof(page)] = [ex.Message]
+                }
+            };
+        }
     }
 
     /// <summary>
@@ -61,15 +77,15 @@ public class EventsController : ControllerBase
     /// <response code="404">Событие не найдено</response>
     [Produces("application/json")]
     [ProducesResponseType(typeof(EventResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [HttpGet("{id}")]
     public ActionResult<EventResponseDto> GetById([FromRoute, PositiveInteger] int id)
     {
         var @event = _eventService.GetEventById(id);
         if (@event == null)
         {
-            return NotFound();
+            throw new Exceptions.NotFoundException();
         }
 
         return Ok(Map.ToResponse(@event));
@@ -81,21 +97,20 @@ public class EventsController : ControllerBase
     /// <param name="body">Параметры создаваемого события</param>
     /// <response code="201">Событие успешно зарегистировано</response>
     /// <response code="400">Параметры события заданы неверно</response>
+    /// <response code="500">Произошла непредвиденная ошибка при выполнении запроса</response>
     [Produces("application/json")]
     [ProducesResponseType(typeof(EventResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [HttpPost]
     public IActionResult CreateEvent([FromBody] EventCreateDto body)
     {
         var nextId = _eventService.CreateEvent(body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description);
-        var @event = _eventService.GetEventById(nextId);
-        return @event != null
-            ? CreatedAtAction(
+        var @event = _eventService.GetEventById(nextId) ?? throw new ApplicationException("Не удалось получить детали только что созданного события");
+        return CreatedAtAction(
                 actionName: nameof(GetById),
                 routeValues: new { id = nextId },
-                value: Map.ToResponse(@event))
-            : StatusCode(StatusCodes.Status500InternalServerError); // лучше, наверное, выбросить исключение, и поймать его в middleware,
-                                                                    // так как ненайденное событие, в данном случае, - это нештатная ситуация
+                value: Map.ToResponse(@event));
     }
 
     /// <summary>
@@ -108,14 +123,14 @@ public class EventsController : ControllerBase
     /// <response code="404">Событие не найдено</response>
     [Produces("application/json")]
     [ProducesResponseType(typeof(EventResponseDto), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(NotFoundResult), StatusCodes.Status404NotFound)]
     [HttpPut("{id}")]
     public IActionResult UpdateEvent([FromRoute, PositiveInteger] int id, [FromBody] EventCreateDto body)
     {
         if (!_eventService.TryUpdate(id, body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description))
         {
-            return NotFound();
+            throw new Exceptions.NotFoundException();
         }
 
         return NoContent();
@@ -129,12 +144,12 @@ public class EventsController : ControllerBase
     /// <response code="400">Порядковый номер события задан неверно</response>
     /// <response code="404">Событие не найдено</response>
     [Produces("application/json")]
-    [ProducesResponseType(typeof(string), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(BadRequestDto), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [HttpDelete("{id}")]
     public IActionResult DeleteEvent([FromRoute, PositiveInteger] int id)
     {
-        return _eventService.TryRemove(id) ? NoContent() : NotFound();
+        return _eventService.TryRemove(id) ? NoContent() : throw new Exceptions.NotFoundException();
     }
 }

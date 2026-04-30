@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using Events.Api.Controllers.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers.Middleware
 {
@@ -20,6 +20,22 @@ namespace Events.Api.Controllers.Middleware
             {
                 await _next(context);
             }
+            catch (InputValidationException ex)
+            {
+                // тот же формат ответа, что и в обработчике ошибок валидации (см. ConfigureApiBehaviorOptions(options => {...})),
+                // только здесь обрабатываются ещё и исключения, возникшие после предварительной валидации, на этапе выполнения бизнес-логики
+                var statusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/json";
+                var errorResponse = new ValidationProblemDetails(ex.Errors)
+                {
+                    Title = "Ошибка валидации",
+                    Status = statusCode,
+                    Detail = "Проверьте правильность введённых данных.",
+                    Type = "https://tools.ietf.org/html/rfc7807",
+                };
+                await context.Response.WriteAsJsonAsync(errorResponse);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Произошла необработанная ошибка в запросе {Method} {Path} (TraceId: '{TraceId}'):\n\t{Message}",
@@ -37,9 +53,10 @@ namespace Events.Api.Controllers.Middleware
                 context.Response.ContentType = "application/json";
                 var errorResponse = new ProblemDetails
                 {
-                    Title = "Произошла внутренняя ошибка сервера",
-                    Detail = ex.Message,
+                    Title = MapToTitle(ex),
                     Status = statusCode,
+                    Detail = ex.Message,
+                    Type = "https://tools.ietf.org/html/rfc7807",
                 };
                 await context.Response.WriteAsJsonAsync(errorResponse);
             }
@@ -47,10 +64,17 @@ namespace Events.Api.Controllers.Middleware
 
         private static int MapToStatusCode(Exception ex) => ex switch
         {
-            ValidationException => StatusCodes.Status400BadRequest,
-            ArgumentException => StatusCodes.Status400BadRequest,
-            KeyNotFoundException => StatusCodes.Status404NotFound,
+            //ArgumentException => StatusCodes.Status400BadRequest,     // на данном этапе это скорее непредвиденная системная ошибка, чем ошибка валидации
+            //KeyNotFoundException => StatusCodes.Status404NotFound,    // на данном этапе это скорее системная ошибка,
+                                                                        // потому что не понятно где она возникла - при обращении к запрашиваемому ресурсу или где-то ещё
+            NotFoundException => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
+        };
+
+        private static string MapToTitle(Exception ex) => ex switch
+        {
+            NotFoundException => "Запрашиваемый ресурс не найден",
+            _ => "Произошла внутренняя ошибка сервера",
         };
     }
 }

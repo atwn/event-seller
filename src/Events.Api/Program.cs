@@ -46,11 +46,12 @@ builder.Services.AddControllers()
                     kv => kv.Key,
                     kv => kv.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
 
-            var customResponse = new BadRequestDto
+            var customResponse = new ValidationProblemDetails(errors)
             {
-                Message = "Проверьте правильность введённых данных.",
+                Title = "Ошибка валидации",
                 Status = (int)HttpStatusCode.BadRequest,
-                Errors = errors
+                Detail = "Проверьте правильность введённых данных.",
+                Type = "https://tools.ietf.org/html/rfc7807",
             };
 
             return new BadRequestObjectResult(customResponse);
