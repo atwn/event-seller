@@ -85,7 +85,7 @@ public class EventsController : ControllerBase
         var @event = _eventService.GetEventById(id);
         if (@event == null)
         {
-            throw new Exceptions.NotFoundException();
+            throw new Exceptions.NotFoundException($"Событие под номером {id} не найдено.");
         }
 
         return Ok(Map.ToResponse(@event));
@@ -130,7 +130,7 @@ public class EventsController : ControllerBase
     {
         if (!_eventService.TryUpdate(id, body.Title, body.StartAt!.Value, body.EndAt!.Value, body.Description))
         {
-            throw new Exceptions.NotFoundException();
+            throw new Exceptions.NotFoundException($"Событие под номером {id} не найдено.");
         }
 
         return NoContent();
@@ -150,6 +150,6 @@ public class EventsController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteEvent([FromRoute, PositiveInteger] int id)
     {
-        return _eventService.TryRemove(id) ? NoContent() : throw new Exceptions.NotFoundException();
+        return _eventService.TryRemove(id) ? NoContent() : throw new Exceptions.NotFoundException($"Событие под номером {id} не найдено.");
     }
 }
