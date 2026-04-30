@@ -1,4 +1,6 @@
-﻿namespace Events.Api.Services
+﻿using Events.Api.Contracts.Dtos;
+
+namespace Events.Api.Services
 {
     public class EventService : Contracts.IEventService
     {
@@ -8,7 +10,7 @@
         {
         }
 
-        public Contracts.PaginatedResult<Model.Event> GetFilteredEvents(Contracts.FilterOptions? filter = null, Contracts.PaginationOptions? pagination = null)
+        public PaginatedResult<Model.Event> GetFilteredEvents(FilterOptions? filter = null, PaginationOptions? pagination = null)
         {
             // применить фильтры к данным, используя отложенное выполнение LINQ:
             IEnumerable<Model.Event> items = _data.OrderBy(e => e.Id);
@@ -23,7 +25,7 @@
             }
 
             // если не переданы параметры пагинации, использовать значения по умолчанию:
-            pagination ??= new Contracts.PaginationOptions();
+            pagination ??= new PaginationOptions();
 
             // посчитать общее количество элементов и страниц до материализации результата:
             var totalCount = items.Count();
@@ -40,7 +42,7 @@
                 .Take(pagination.PageSize)
                 .ToList(); // материализовать результат, чтобы избежать повторного выполнения фильтрации
 
-            return new Contracts.PaginatedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
+            return new PaginatedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
         }
 
         public Model.Event? GetEventById(int id)

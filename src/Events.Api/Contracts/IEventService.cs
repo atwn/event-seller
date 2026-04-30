@@ -1,4 +1,6 @@
-﻿namespace Events.Api.Contracts
+﻿using Events.Api.Contracts.Dtos;
+
+namespace Events.Api.Contracts
 {
     public interface IEventService
     {

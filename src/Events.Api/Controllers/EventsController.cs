@@ -1,4 +1,5 @@
 using Events.Api.Contracts;
+using Events.Api.Contracts.Dtos;
 using Events.Api.Controllers.Dtos;
 using Events.Api.Controllers.Mappers;
 using Events.Api.Controllers.Validators;

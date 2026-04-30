@@ -35,11 +35,27 @@ dotnet test .\src\EventService.Tests\EventService.Tests.csproj
 - `BadRequestDto` - ошибка валидации (формируется валидатором контроллера)  
 - `ProblemDetails` - остальные ошибки (формируется в глобальном обработчике ошибок)  
 
+### Структура проекта:
+```
+Events.sln
+└── src/
+    ├── Events.Api
+    |   ├── Contracts - промежуточный слой между API слоем и бизнес-логикой (Application)
+    |   |   ├── Dtos - структуры и классы для передачи данных между слоями приложения
+    |   |   └── ...
+    |   ├── Controllers - API-слой, отвечает за обработку запросов
+    |   |   ├── Dtos - структуры и классы для передачи данных пользователю
+    |   |   └── ...
+    |   └── ...
+    └── EventService.Tests
+```
+
 ### Prerequisites:
 .NET 10 SDK
 
 ### TODOs:
-- [ ] (maybe) throw exceptions from Validators instead of returning BadRequest to let exception handing middleware convert them into ProblemDetails
+- [ ] привести ошибки (`BadRequestDto`, `NotFound` и т.д.) к формату `ProblemDetails`
+- [ ] split the project into API → Application → Domain ← Infrastructure (clean / onion architecture)
 - [ ] move seeding of test data from Program.cs to a helper class
 
 ### Scaffolding:

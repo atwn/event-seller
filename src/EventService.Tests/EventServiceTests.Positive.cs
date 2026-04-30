@@ -1,4 +1,4 @@
-﻿using Events.Api.Contracts;
+﻿using Events.Api.Contracts.Dtos;
 
 namespace EventService.Tests;
 

@@ -1,4 +1,4 @@
-﻿namespace Events.Api.Contracts
+﻿namespace Events.Api.Contracts.Dtos
 {
     public record PaginatedResult<T>(
         IEnumerable<T> Items,
