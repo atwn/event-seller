@@ -124,7 +124,7 @@ public class EventsController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(typeof(EventResponseDto), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(NotFoundResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [HttpPut("{id}")]
     public IActionResult UpdateEvent([FromRoute, PositiveInteger] int id, [FromBody] EventCreateDto body)
     {
