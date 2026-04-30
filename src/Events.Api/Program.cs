@@ -1,6 +1,7 @@
 using Events.Api.Contracts;
 using Events.Api.Controllers.Dtos;
 using Events.Api.Controllers.Filters;
+using Events.Api.Controllers.Middleware;
 using Events.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -45,11 +46,12 @@ builder.Services.AddControllers()
                     kv => kv.Key,
                     kv => kv.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
 
-            var customResponse = new BadRequestDto
+            var customResponse = new ValidationProblemDetails(errors)
             {
-                Message = "Проверьте правильность введённых данных.",
+                Title = "Ошибка валидации",
                 Status = (int)HttpStatusCode.BadRequest,
-                Errors = errors
+                Detail = "Проверьте правильность введённых данных.",
+                Type = "https://tools.ietf.org/html/rfc7807",
             };
 
             return new BadRequestObjectResult(customResponse);
@@ -70,6 +72,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// сначала добавить трассировку запросов, затем обработку исключений:
+app.UseMiddleware<TracingMiddleware>();
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();

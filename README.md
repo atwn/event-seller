@@ -1,14 +1,22 @@
 ## Yandex Practicum. C#/.NET Middle. Course Project.
 
 ### Instructions:
+
+#### To explore the API with Swagger UI:
 ```bash
 dotnet run --project .\src\Events.Api\Events.Api.csproj
 ```
 then open http://localhost:5111/swagger/index.html in the browser  
 
+#### To run tests:
+```
+dotnet test .\src\EventService.Tests\EventService.Tests.csproj
+```
+
 ### Endpoints:
-- `GET /events` - возвращает полный список событий  
+- `GET /events?title={title}&from={from}&to={to}&page={page}&pageSize={pageSize}` - возвращает полный список событий с фильтрацией по названию и дате, и возможностью пагинации  
   - `200` - все события найдены, список событий в теле ответа  
+  - `400` - параметры фильтрации заданы неверно  
 - `GET /events/{id}` - возвращает событие под номером `{id}`  
   - `200` - событие найдено, детали события в теле ответа  
   - `404` - событие под номером `{id}` не найдено  
@@ -23,8 +31,28 @@ then open http://localhost:5111/swagger/index.html in the browser
   - `204` - событие было удалено успешно  
   - `404` - событие под номером `{id}` не найдено  
 
+### Структура проекта:
+```
+Events.sln
+└── src/
+    ├── Events.Api
+    |   ├── Contracts - промежуточный слой между API слоем и бизнес-логикой (Application)
+    |   |   ├── Dtos - структуры и классы для передачи данных между слоями приложения
+    |   |   └── ...
+    |   ├── Controllers - API-слой, отвечает за обработку запросов
+    |   |   ├── Dtos - структуры и классы для передачи данных пользователю
+    |   |   └── ...
+    |   └── ...
+    └── EventService.Tests
+```
+
 ### Prerequisites:
 .NET 10 SDK
+
+### TODOs:
+- [x] привести ошибки (`BadRequestDto`, `NotFound` и т.д.) к формату `ProblemDetails`
+- [ ] split the project into API → Application → Domain ← Infrastructure (clean / onion architecture)
+- [ ] move seeding of test data from Program.cs to a helper class
 
 ### Scaffolding:
 ```bash
@@ -34,4 +62,7 @@ dotnet new solution -n Events
 dotnet solution .\Events.slnx add .\Events.Api\Events.Api.csproj
 
 dotnet add .\Events.Api\Events.Api.csproj package Swashbuckle.AspNetCore
+
+dotnet new xunit -o .\src\EventService.Tests\
+dotnet solution .\Events.slnx add .\EventService.Tests\EventService.Tests.csproj
 ```

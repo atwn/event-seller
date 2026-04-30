@@ -1,0 +1,178 @@
+﻿using Events.Api.Contracts.Dtos;
+
+namespace EventService.Tests;
+
+public partial class EventServiceTests
+{
+    private readonly Events.Api.Services.EventService _service;
+
+    public EventServiceTests()
+    {
+        _service = new Events.Api.Services.EventService();
+    }
+
+    [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
+    public void CreateEvent_ReturnsValidEventId()
+    {
+        // Arrange
+        var @event = new Events.Api.Model.Event
+        {
+            Title = "Test Event",
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1),
+            Description = "This is a test event."
+        };
+
+        // Act
+        var id = _service.CreateEvent(@event.Title, @event.StartAt, @event.EndAt, @event.Description);
+
+        // Assert
+        Assert.True(id > 0);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.UpToTwoEvents), MemberType = typeof(EventServiceTestData))]
+    public void GetAllEvents_ReturnsAllEvents(List<Events.Api.Model.Event> storedEvents)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents();
+
+        // Assert
+        Assert.Equal(storedEvents, result.Items);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetFilteredEventsData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventsFilteredByTitle_ReturnsFilteredEvents(List<Events.Api.Model.Event> storedEvents, FilterOptions filter, List<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(filter);
+
+        // Assert
+        Assert.Equal(expected, result.Items);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetEventsWithPaginationData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventsWithPagination_ReturnsCorrectPage(List<Events.Api.Model.Event> storedEvents, PaginationOptions pagination, PaginatedResult<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(pagination: pagination);
+
+        // Assert
+        Assert.Equivalent(expected, result);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Large")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetFilteredEventsWithPaginationData), MemberType = typeof(EventServiceTestData))]
+    public void GetFilteredEventsWithPagination_ReturnsCorrectPage(List<Events.Api.Model.Event> storedEvents, FilterOptions filter, PaginationOptions pagination, PaginatedResult<Events.Api.Model.Event> expected)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetFilteredEvents(filter, pagination);
+
+        // Assert
+        Assert.Equivalent(expected, result);
+    }
+
+    [Theory]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Medium")]
+    [Trait("Direction", "Positive")]
+    [MemberData(nameof(EventServiceTestData.GetEventByIdData), MemberType = typeof(EventServiceTestData))]
+    public void GetEventById_EventExists_ReturnsCorrectEvent(List<Events.Api.Model.Event> storedEvents, int eventId, Events.Api.Model.Event expectedEvent)
+    {
+        // Arrange
+        foreach (var @event in storedEvents) {
+            _service.Add(@event);
+        }
+
+        // Act
+        var result = _service.GetEventById(eventId);
+
+        // Assert
+        Assert.Equal(expectedEvent, result);
+    }
+
+    [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
+    public void UpdateEvent_EventExists_ReturnsTrue()
+    {
+        // Arrange
+        var @event = new Events.Api.Model.Event
+        {
+            Id = 1,
+            Title = "Test Event",
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1),
+            Description = "This is a test event."
+        };
+        _service.Add(@event);
+
+        // Act
+        var result = _service.TryUpdate(@event.Id, "Updated Title", @event.StartAt, @event.EndAt, @event.Description);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    [Trait("Target", nameof(Events.Api.Services.EventService))]
+    [Trait("Complexity", "Low")]
+    [Trait("Direction", "Positive")]
+    public void DeleteEvent_EventExists_ReturnsTrue()
+    {
+        // Arrange
+        var @event = new Events.Api.Model.Event
+        {
+            Id = 1,
+            Title = "Test Event",
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1),
+            Description = "This is a test event."
+        };
+        _service.Add(@event);
+
+        // Act
+        var result = _service.TryRemove(@event.Id);
+
+        // Assert
+        Assert.True(result);
+    }
+}

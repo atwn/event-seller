@@ -1,4 +1,6 @@
-﻿namespace Events.Api.Services
+﻿using Events.Api.Contracts.Dtos;
+
+namespace Events.Api.Services
 {
     public class EventService : Contracts.IEventService
     {
@@ -8,24 +10,72 @@
         {
         }
 
-        public IEnumerable<Model.Event> GetAll()
+        public PaginatedResult<Model.Event> GetFilteredEvents(FilterOptions? filter = null, PaginationOptions? pagination = null)
         {
-            return _data;
+            // применить фильтры к данным, используя отложенное выполнение LINQ:
+            IEnumerable<Model.Event> items = _data.OrderBy(e => e.Id);
+            if (filter?.Title is string title) {
+                items = items.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+            }
+            if (filter?.From is DateTime from) {
+                items = items.Where(e => e.StartAt >= from);
+            }
+            if (filter?.To is DateTime to) {
+                items = items.Where(e => e.EndAt <= to);
+            }
+
+            // если не переданы параметры пагинации, использовать значения по умолчанию:
+            pagination ??= new PaginationOptions();
+
+            // посчитать общее количество элементов и страниц до материализации результата:
+            var totalCount = items.Count();
+            var totalPages = totalCount == 0 ? 1 : (totalCount + pagination.PageSize - 1) / pagination.PageSize; // округление вверх без использования Math.Ceiling
+
+            // запрошенный номер страницы не должен превышать totalPages:
+            if (pagination.Page > totalPages) {
+                throw new Contracts.Exceptions.PaginationException($"Номер запрошенной страницы {pagination.Page} превышает общее количество страниц {totalPages}.")
+                {
+                    Options = pagination
+                };
+            }
+
+            // применить пагинацию и материализовать результат:
+            items = items
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList(); // материализовать результат, чтобы избежать повторного выполнения фильтрации
+
+            return new PaginatedResult<Model.Event>(Items: items, CurrentPage: pagination.Page, TotalPages: totalPages, TotalItems: totalCount);
         }
 
         public Model.Event? GetEventById(int id)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
             return _data.FirstOrDefault(e => e.Id == id);
         }
 
         public bool TryRemove(int id)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
             return GetEventById(id) is Model.Event @event
                 && _data.Remove(@event);
         }
 
         public int CreateEvent(string title, DateTime startAt, DateTime endAt, string? description = null)
         {
+            if (startAt >= endAt)
+            {
+                throw new ArgumentException("StartAt must be earlier than EndAt");
+            }
+
             var nextId = GetNextId();
             var newEvent = new Model.Event
             {
@@ -41,6 +91,16 @@
 
         public bool TryUpdate(int id, string title, DateTime startAt, DateTime endAt, string? description = null)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID must be a positive integer", nameof(id));
+            }
+
+            if (startAt >= endAt)
+            {
+                throw new ArgumentException("StartAt must be earlier than EndAt");
+            }
+
             var eventItem = _data.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
             {
@@ -56,7 +116,7 @@
 
         public int GetNextId()
         {
-            return _data.Max(e => e.Id) + 1;
+            return _data.Select(e => e.Id).DefaultIfEmpty(0).Max() + 1;
         }
 
         public void Add(Model.Event @event)
