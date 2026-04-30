@@ -1,6 +1,6 @@
 ﻿namespace Events.Api.Controllers.Exceptions
 {
-    public class InputValidationException : Exception
+    public class InputValidationException : Contracts.Exceptions.DomainException
     {
         public InputValidationException() : base() { }
 

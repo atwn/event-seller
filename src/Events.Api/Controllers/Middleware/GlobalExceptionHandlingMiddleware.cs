@@ -36,7 +36,7 @@ namespace Events.Api.Controllers.Middleware
                 };
                 await context.Response.WriteAsJsonAsync(errorResponse);
             }
-            catch (NotFoundException ex)
+            catch (Contracts.Exceptions.DomainException ex)
             {
                 var statusCode = StatusCodes.Status404NotFound;
                 context.Response.StatusCode = statusCode;
@@ -45,7 +45,7 @@ namespace Events.Api.Controllers.Middleware
                 {
                     Title = MapToTitle(ex),
                     Status = statusCode,
-                    Detail = ex.Message,
+                    Detail = ex.Message, // здесь возвращение Message оправдано, так как в доменных исключениях мы сами задаём значение этого параметра
                     Type = "https://tools.ietf.org/html/rfc7807",
                 };
                 await context.Response.WriteAsJsonAsync(errorResponse);

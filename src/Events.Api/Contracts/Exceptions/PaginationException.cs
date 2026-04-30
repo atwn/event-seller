@@ -2,7 +2,7 @@
 
 namespace Events.Api.Contracts.Exceptions
 {
-    public class PaginationException : Exception
+    public class PaginationException : DomainException
     {
         public PaginationException() : base() { }
 

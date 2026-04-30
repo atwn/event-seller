@@ -1,6 +1,6 @@
 ﻿namespace Events.Api.Controllers.Exceptions
 {
-    public class NotFoundException : Exception
+    public class NotFoundException : Contracts.Exceptions.DomainException
     {
         public NotFoundException() : base() { }
 
